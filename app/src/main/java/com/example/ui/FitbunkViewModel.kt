@@ -156,6 +156,13 @@ class FitbunkViewModel(
         navigateTo(Screen.ProductDetail(product.id))
     }
 
+    fun openVirtualTryOn(product: Product? = null) {
+        if (product != null) {
+            _selectedProduct.value = product
+        }
+        navigateTo(Screen.VirtualTryOn(product?.id))
+    }
+
     fun openOrderSuccess(order: Order) {
         _activeOrder.value = order
         navigateTo(Screen.OrderSuccess(order.id))

@@ -54,7 +54,8 @@ fun DiscoverScreen(
     onProductClick: (Product) -> Unit,
     pendingSizePickerProduct: Product?,
     onConfirmSizePick: (String) -> Unit,
-    onDismissSizePick: () -> Unit
+    onDismissSizePick: () -> Unit,
+    onOpenVirtualTryOn: (Product) -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val currentProduct = products.getOrNull(currentIndex)
@@ -125,19 +126,54 @@ fun DiscoverScreen(
                         }
                     }
 
-                    // Undo Button
-                    IconButton(
-                        onClick = onUndoClick,
-                        enabled = canUndo,
-                        modifier = Modifier
-                            .size(38.dp)
-                            .testTag("discover_undo_button")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Undo Last Swipe",
-                            tint = if (canUndo) FitbunkViolet else FitbunkTextSecondary.copy(alpha = 0.4f)
-                        )
+                        // AI Try-On Quick Pill
+                        if (currentProduct != null) {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = FitbunkViolet,
+                                modifier = Modifier
+                                    .clickable { onOpenVirtualTryOn(currentProduct) }
+                                    .testTag("top_bar_ai_try_on_btn")
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.AutoAwesome,
+                                        contentDescription = null,
+                                        tint = FitbunkWhite,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Text(
+                                        text = "AI TRY-ON",
+                                        color = FitbunkWhite,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                        // Undo Button
+                        IconButton(
+                            onClick = onUndoClick,
+                            enabled = canUndo,
+                            modifier = Modifier
+                                .size(38.dp)
+                                .testTag("discover_undo_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Undo Last Swipe",
+                                tint = if (canUndo) FitbunkViolet else FitbunkTextSecondary.copy(alpha = 0.4f)
+                            )
+                        }
                     }
                 }
 
@@ -650,6 +686,27 @@ fun DiscoverScreen(
                             contentDescription = "Pass",
                             tint = Color(0xFFEF4444),
                             modifier = Modifier.size(30.dp)
+                        )
+                    }
+
+                    // AI Virtual Try-On Center Button
+                    IconButton(
+                        onClick = {
+                            onOpenVirtualTryOn(currentProduct)
+                        },
+                        modifier = Modifier
+                            .size(56.dp)
+                            .shadow(10.dp, CircleShape)
+                            .clip(CircleShape)
+                            .background(FitbunkDeepPurple)
+                            .border(2.dp, FitbunkViolet, CircleShape)
+                            .testTag("discover_try_on_btn")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.AutoAwesome,
+                            contentDescription = "AI Virtual Try On",
+                            tint = FitbunkLavender,
+                            modifier = Modifier.size(26.dp)
                         )
                     }
 

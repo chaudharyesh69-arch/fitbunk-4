@@ -40,7 +40,7 @@ fun FitbunkLogo(
     size: Dp = 36.dp
 ) {
     Image(
-        painter = painterResource(id = R.drawable.fitbunk_logo),
+        painter = painterResource(id = R.drawable.fitbunk_logo_circle),
         contentDescription = "FITBUNK Official Brand Logo",
         modifier = modifier
             .size(size)

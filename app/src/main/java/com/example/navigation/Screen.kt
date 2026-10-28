@@ -22,6 +22,7 @@ sealed class Screen(val route: String) {
         }
     }
     object Checkout : Screen("checkout")
+    data class VirtualTryOn(val productId: String? = null) : Screen("virtual_try_on/${productId ?: "default"}")
     data class OrderSuccess(val orderId: String) : Screen("order_success/$orderId")
     data class OrderTracking(val orderId: String) : Screen("order_tracking/$orderId")
     object SettingsAndSupport : Screen("settings_and_support")

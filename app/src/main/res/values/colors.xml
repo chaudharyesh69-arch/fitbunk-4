@@ -5,6 +5,8 @@
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="fitbunk_deep_purple">#210C35</color>
+    <color name="fitbunk_violet">#6D28D9</color>
+    <color name="fitbunk_lavender">#B69AFF</color>
+    <color name="fitbunk_surface_dark">#2E1349</color>
 </resources>

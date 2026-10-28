@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -34,7 +35,8 @@ fun ProductDetailScreen(
     isLiked: Boolean,
     onBackClick: () -> Unit,
     onToggleLike: () -> Unit,
-    onAddToCart: (Product, String, ProductColor) -> Unit
+    onAddToCart: (Product, String, ProductColor) -> Unit,
+    onOpenVirtualTryOn: () -> Unit = {}
 ) {
     var selectedImageIndex by remember { mutableStateOf(0) }
     var selectedSize by remember { mutableStateOf(product.sizes.firstOrNull() ?: "M") }
@@ -241,6 +243,83 @@ fun ProductDetailScreen(
                             Text(product.deliveryEstimate, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = FitbunkDeepPurple)
                             Text("Micro-hub dispatch within 10 minutes", fontSize = 11.sp, color = FitbunkViolet)
                         }
+                    }
+                }
+
+                // AI Virtual Try-On Banner
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { onOpenVirtualTryOn() }
+                        .testTag("detail_ai_try_on_banner"),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = FitbunkDeepPurple),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(FitbunkViolet),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.AutoAwesome,
+                                    contentDescription = null,
+                                    tint = FitbunkWhite,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Column {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = "AI Virtual Try-On",
+                                        color = FitbunkWhite,
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 15.sp
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = FitbunkAccentGreen
+                                    ) {
+                                        Text(
+                                            text = "TRY NOW",
+                                            color = FitbunkWhite,
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = "See drape & silhouette on your photo with AI fit",
+                                    color = FitbunkLavenderLight,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "Open Try On",
+                            tint = FitbunkLavender,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
 

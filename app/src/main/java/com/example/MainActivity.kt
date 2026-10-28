@@ -1,6 +1,9 @@
 package com.example
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -20,11 +23,67 @@ import com.example.ui.FitbunkViewModel
 import com.example.ui.components.FitbunkBottomNav
 import com.example.ui.screens.*
 import com.example.ui.theme.FitbunkTheme
+import com.google.firebase.FirebaseApp
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
+import com.google.firebase.appcheck.recaptcha.RecaptchaAppCheckProviderFactory
 import kotlinx.coroutines.flow.collectLatest
+
+private const val TAG_APPCHECK = "AppCheckInit"
+private const val DEBUG_TOKEN_EXTRA = "FIREBASE_APPCHECK_DEBUG_TOKEN"
+private const val DEBUG_STORE_PREFIX = "com.google.firebase.appcheck.debug.store."
+private const val DEBUG_SECRET_KEY = "com.google.firebase.appcheck.debug.DEBUG_SECRET"
+private const val RECAPTCHA_SITE_KEY_RES = "recaptcha_site_key"
+
+fun configureAppCheck(context: Context, intent: Intent?) {
+    try {
+        if (FirebaseApp.getApps(context).isEmpty()) {
+            FirebaseApp.initializeApp(context)
+        }
+
+        if (BuildConfig.DEBUG) {
+            val debugToken = intent?.getStringExtra(DEBUG_TOKEN_EXTRA)
+            if (!debugToken.isNullOrEmpty()) {
+                val persistenceKey = FirebaseApp.getInstance().persistenceKey
+                val prefs = context.getSharedPreferences(
+                    "$DEBUG_STORE_PREFIX$persistenceKey",
+                    Context.MODE_PRIVATE
+                )
+                // Use commit() synchronously so the debug secret is written before factory reads it
+                prefs.edit()
+                    .putString(DEBUG_SECRET_KEY, debugToken)
+                    .commit()
+                Log.d(TAG_APPCHECK, "App Check debug secret configured successfully.")
+            } else {
+                Log.w(TAG_APPCHECK, "No debug token found in Intent extra.")
+            }
+
+            FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+                DebugAppCheckProviderFactory.getInstance()
+            )
+            Log.d(TAG_APPCHECK, "DebugAppCheckProviderFactory installed.")
+        } else {
+            val resId = context.resources.getIdentifier(RECAPTCHA_SITE_KEY_RES, "string", context.packageName)
+            if (resId != 0) {
+                val siteKey = context.getString(resId)
+                if (siteKey.isNotBlank()) {
+                    FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+                        RecaptchaAppCheckProviderFactory.getInstance(siteKey)
+                    )
+                    Log.d(TAG_APPCHECK, "RecaptchaAppCheckProviderFactory installed.")
+                }
+            }
+        }
+    } catch (e: Exception) {
+        Log.e(TAG_APPCHECK, "Failed to initialize Firebase App Check", e)
+    }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Step 1: Configure App Check before setContent or ViewModels
+        configureAppCheck(this, intent)
         enableEdgeToEdge()
         setContent {
             FitbunkTheme {
@@ -230,7 +289,8 @@ fun FitbunkApp(viewModel: FitbunkViewModel = viewModel()) {
                         onProductClick = { product -> viewModel.openProductDetails(product) },
                         pendingSizePickerProduct = pendingSizePicker?.product,
                         onConfirmSizePick = { size -> viewModel.confirmPendingSizePick(size) },
-                        onDismissSizePick = { viewModel.dismissPendingSizePick() }
+                        onDismissSizePick = { viewModel.dismissPendingSizePick() },
+                        onOpenVirtualTryOn = { product -> viewModel.openVirtualTryOn(product) }
                     )
                 }
 
@@ -244,7 +304,8 @@ fun FitbunkApp(viewModel: FitbunkViewModel = viewModel()) {
                         onToggleLike = { viewModel.onToggleLike(product) },
                         onAddToCart = { prod, size, color ->
                             viewModel.onAddToCart(prod, size, color)
-                        }
+                        },
+                        onOpenVirtualTryOn = { viewModel.openVirtualTryOn(product) }
                     )
                 }
 
@@ -316,6 +377,23 @@ fun FitbunkApp(viewModel: FitbunkViewModel = viewModel()) {
                             val newOrder = viewModel.repository.placeOrder(paymentMethod, address)
                             viewModel.openOrderSuccess(newOrder)
                         }
+                    )
+                }
+
+                // AI VIRTUAL TRY-ON STUDIO
+                is Screen.VirtualTryOn -> {
+                    val initialProd = selectedProduct
+                        ?: (if (screen.productId != null) products.firstOrNull { it.id == screen.productId } else null)
+                        ?: products.first()
+                    VirtualTryOnScreen(
+                        initialProduct = initialProd,
+                        allProducts = products,
+                        userDefaultSize = userProfile.sizeTops,
+                        onBackClick = { viewModel.navigateBack() },
+                        onAddToCart = { prod, size, color ->
+                            viewModel.onAddToCart(prod, size, color)
+                        },
+                        onNavigateToCart = { viewModel.switchTab(Screen.Cart) }
                     )
                 }
 
