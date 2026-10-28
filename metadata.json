@@ -1,0 +1,8 @@
+{
+  "name": "FITBUNK",
+  "description": "Fashion-tech customer shopping app with swipe-to-discover streetwear outfits, instant carting, and rapid delivery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
